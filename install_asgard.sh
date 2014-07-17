@@ -155,6 +155,8 @@ cat > /tmp/crontab <<EOF
 
 EOF
 
+crontab -f /tmp/crontab
+
 #wget https://github.com/Netflix/asgard/releases/download/asgard-1.4.2/asgard.war
 wget https://netflixoss.ci.cloudbees.com/job/asgard-master/lastSuccessfulBuild/artifact/target/asgard.war
 rm -r ROOT/
