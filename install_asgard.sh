@@ -77,6 +77,84 @@ server {
 
 }
 EOF
+
+cat > /etc/default/tomcat7 <<EOF
+
+# Run Tomcat as this user ID. Not setting this or leaving it blank will use the
+# default of tomcat7.
+TOMCAT7_USER=tomcat7
+
+# Run Tomcat as this group ID. Not setting this or leaving it blank will use
+# the default of tomcat7.
+TOMCAT7_GROUP=tomcat7
+
+# The home directory of the Java development kit (JDK). You need at least
+# JDK version 1.5. If JAVA_HOME is not set, some common directories for
+# OpenJDK, the Sun JDK, and various J2SE 1.5 versions are tried.
+#JAVA_HOME=/usr/lib/jvm/openjdk-6-jdk
+
+# You may pass JVM startup parameters to Java here. If unset, the default
+# options will be: -Djava.awt.headless=true -Xmx128m -XX:+UseConcMarkSweepGC
+#
+# Use "-XX:+UseConcMarkSweepGC" to enable the CMS garbage collector (improved
+# response time). If you use that option and you run Tomcat on a machine with
+# exactly one CPU chip that contains one or two cores, you should also add
+# the "-XX:+CMSIncrementalMode" option.
+JAVA_OPTS="-Djava.awt.headless=true -Xmx2048m -XX:MaxPermSize=128m -XX:+UseConcMarkSweepGC"
+
+# To enable remote debugging uncomment the following line.
+# You will then be able to use a java debugger on port 8000.
+#JAVA_OPTS="${JAVA_OPTS} -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+
+# Java compiler to use for translating JavaServer Pages (JSPs). You can use all
+# compilers that are accepted by Ant's build.compiler property.
+#JSP_COMPILER=javac
+
+# Use the Java security manager? (yes/no, default: no)
+#TOMCAT7_SECURITY=no
+
+# Number of days to keep logfiles in /var/log/tomcat7. Default is 14 days.
+#LOGFILE_DAYS=14
+
+# Location of the JVM temporary directory
+# WARNING: This directory will be destroyed and recreated at every startup !
+#JVM_TMP=/tmp/tomcat7-temp
+
+# If you run Tomcat on port numbers that are all higher than 1023, then you
+# do not need authbind.  It is used for binding Tomcat to lower port numbers.
+# NOTE: authbind works only with IPv4.  Do not enable it when using IPv6.
+# (yes/no, default: no)
+#AUTHBIND=no
+
+EOF
+
+cat > /tmp/crontab <<EOF
+# Edit this file to introduce tasks to be run by cron.
+#
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+#
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').#
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+#
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+#
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+#
+# For more information see the manual pages of crontab(5) and cron(8)
+#
+# m h  dom mon dow   command
+0 */8   *   *   *    /usr/bin/service tomcat7 restart
+
+EOF
+
 #wget https://github.com/Netflix/asgard/releases/download/asgard-1.4.2/asgard.war
 wget https://netflixoss.ci.cloudbees.com/job/asgard-master/lastSuccessfulBuild/artifact/target/asgard.war
 rm -r ROOT/
