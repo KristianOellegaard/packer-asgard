@@ -1,0 +1,38 @@
+{
+  "variables": {
+      "base_ami": "ami-aa56a1dd",
+      "base_ami_name": "ubuntu/images/ebs/ubuntu-precise-12.04-amd64-server-20140130",
+      "aws_access_key": "{{ env `AWS_ACCESS_KEY` }}",
+      "aws_secret_key": "{{ env `AWS_SECRET_KEY` }}",
+      "version": "1.4.3a",
+      "revision": 1,
+      "app": "asgard"
+    },
+    "builders": [
+    {
+        "type": "amazon-ebs",
+        "region": "eu-west-1",
+        "source_ami": "{{user `base_ami`}}",
+        "instance_type": "m3.medium",
+        "ssh_username": "ubuntu",
+
+        "access_key": "{{user `aws_access_key`}}",
+        "secret_key": "{{user `aws_secret_key`}}",
+
+        "ami_name": "{{ user `app` }}-{{user `version`}}-{{user `revision`}}-x86_64-{{isotime | clean_ami_name}}",
+        "ami_description": "name={{user `app`}}, arch=x86_64, ancestor_name={{user `base_ami_name`}}, ancestor_id={{user `base_ami`}}, ancestor_version=",
+        "tags": {
+          "appversion": "{{user `app`}}-{{user `version`}}-{{user `revision`}}"
+        }
+
+   }],
+    "provisioners": [{
+       "type": "shell",
+       "script": "install_{{ user `app` }}.sh",
+       "override": {
+          "amazon-ebs": {
+            "execute_command": "sudo bash -xe {{.Path}}"
+          }
+        }
+    }]
+}
