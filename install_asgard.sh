@@ -66,6 +66,15 @@ apt-get update
 apt-get upgrade -f -y
 
 apt-get install tomcat7 nginx -f -y
+
+# Use the java from Oracle
+echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+add-apt-repository ppa:webupd8team/java -y
+apt-get update
+apt-get install oracle-java7-installer -f -y
+
+update-java-alternatives -s java-7-oracle
+
 cd /var/lib/tomcat7/webapps
 
 
@@ -73,6 +82,7 @@ cat > /etc/nginx/sites-enabled/default <<EOF
 server {
         location / {
                 proxy_pass        http://localhost:8080/;
+                proxy_set_header Host \$http_host;
         }
 
 }
@@ -161,3 +171,54 @@ crontab /tmp/crontab
 wget https://netflixoss.ci.cloudbees.com/job/asgard-master/lastSuccessfulBuild/artifact/target/asgard.war
 rm -r ROOT/
 mv asgard.war ROOT.war
+
+mkdir /usr/share/tomcat7/.asgard/
+
+cat > /usr/share/tomcat7/.asgard/Config.groovy <<EOF
+// Add the correct values below
+
+import com.netflix.asgard.Region
+grails {
+        awsAccounts=[] // ['12312312312', '13123123']
+        awsAccountNames=[] ['12312312': 'test', '412312312': 'prod'] 
+}
+secret {
+        accessId='sadasdasdasd'
+        secretKey='asdasdasda'
+}
+cloud {
+        accountName='prod'
+        publicResourceAccounts=['test']
+        buildServer = 'http://circleci.com/gh/yourorg/project'
+        imageTagMasterAccount='test'
+}
+promote {
+    // The address of the Asgard server that should receive all the REST calls
+    // to add, update, and delete image tags in order keep the image tags
+    // identical between the source and target accounts.
+    targetServer = 'http://prod'
+
+    // Set this to true in order to turn on image replication from this Asgard
+    // instance. Only set this on the source Asgard, not on the target Asgard.
+    imageTags = false
+
+    // The address of the One True Asgard Instance that should be solely
+    // responsible for automated replication of image tags to the tag promotion
+    // target account. Asgard will query this address for its internal host name
+    // in order to answer the question "Am I the current Asgard instance who
+    // should do the tag replication?"
+    canonicalServerForBakeEnvironment = 'http://test'
+}
+
+plugin {
+    authenticationProvider = 'oneLoginAuthenticationProvider'
+}
+
+security {
+    onelogin {
+        url = 'https://app.onelogin.com/trust/saml2/http-post/sso/...'
+        certificate = "" // without the comment ----BEGIN----/----END----
+    }
+}
+
+EOF
